@@ -86,7 +86,7 @@ import getpass
 # Decrypt and run the script
 def run_encrypted_script(password):
     # Read the data
-    data = \'\'\'""" + encrypted_data + b"""\'\'\'
+    data = b\'\'\'""" + encrypted_data + b"""\'\'\'
     # Derive a key from the password
     password = password.encode()
     salt = b'salt_'
