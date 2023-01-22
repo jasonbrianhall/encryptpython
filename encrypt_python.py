@@ -75,12 +75,13 @@ def create_encrypted_script(filename, password):
     encrypted_data = f.encrypt(data)
     # Write the encrypted data to a new file
     data=b"""#!/usr/bin/env
-import os
 import base64
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import getpass
+
 
 # Decrypt and run the script
 def run_encrypted_script(password):
@@ -101,7 +102,7 @@ def run_encrypted_script(password):
     # Decrypt the data
     decrypted_data = f.decrypt(data)
     # Run the decrypted script
-    #exec(decrypted_data)
+    exec(decrypted_data)
 
 def main():
     password = getpass.getpass(prompt='Enter password: ')
