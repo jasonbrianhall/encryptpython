@@ -74,7 +74,7 @@ def create_encrypted_script(filename, password):
     # Encrypt the data
     encrypted_data = f.encrypt(data)
     # Write the encrypted data to a new file
-    data=b"""#!/usr/bin/env
+    data=b"""#!/usr/bin/env python
 import base64
 from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
