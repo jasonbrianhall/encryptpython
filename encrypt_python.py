@@ -78,7 +78,10 @@ def main():
         sys.exit(0)
     elif not filename==None:
         password = getpass.getpass(prompt='Enter password: ')
-        run_encrypted_script(filename, password)
+        try:
+            run_encrypted_script(filename, password)
+        except:
+            print("Script isn't encrypted or wrong password!!!")
         sys.exit(0)
     else:
         show_help()
