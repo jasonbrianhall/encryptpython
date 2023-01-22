@@ -84,8 +84,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 # Decrypt and run the script
 def run_encrypted_script(password):
-    # Read the file
-    data = """ + encrypted_data + b"""
+    # Read the data
+    data = \'\'\'""" + encrypted_data + b"""\'\'\'
     # Derive a key from the password
     password = password.encode()
     salt = b'salt_'
@@ -106,6 +106,9 @@ def run_encrypted_script(password):
 def main():
     password = getpass.getpass(prompt='Enter password: ')
     run_encrypted_script(password)
+
+if __name__ == "__main__":
+    main()
 """
 
     with open(filename, 'wb') as f:
