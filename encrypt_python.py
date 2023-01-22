@@ -80,6 +80,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import sys
 import getpass
 
 
@@ -102,7 +103,11 @@ def run_encrypted_script(password):
     # Decrypt the data
     decrypted_data = f.decrypt(data)
     # Run the decrypted script
-    exec(decrypted_data)
+    try:
+        exec(decrypted_data)
+    except:
+        print("Wrong password!!!")
+        sys.exit(1)
 
 def main():
     password = getpass.getpass(prompt='Enter password: ')
