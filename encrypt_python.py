@@ -100,10 +100,10 @@ def run_encrypted_script(password):
     )
     key = base64.urlsafe_b64encode(kdf.derive(password))
     f = Fernet(key)
-    # Decrypt the data
-    decrypted_data = f.decrypt(data)
-    # Run the decrypted script
     try:
+        # Decrypt the data
+        decrypted_data = f.decrypt(data)
+    # Run the decrypted script
         exec(decrypted_data)
     except:
         print("Wrong password!!!")
@@ -137,11 +137,11 @@ def main():
         if opt in ("-h", "--help"):
             show_help()
             sys.exit()
-        elif opt in ("-i"):
+        elif opt in ("-i", "--input"):
             filename = arg
-        elif opt in ("-e"):
+        elif opt in ("-e", "--encrypt"):
             encrypt=True
-        elif opt in ("-c"):
+        elif opt in ("-c", "--create"):
             selfencrypted=True
 
     if encrypt==True and not filename==None:
@@ -172,6 +172,7 @@ def show_help():
     print("-h --help    Show this help message")
     print("-i --input   Provide a filename as input (required)")
     print("-e --encrypt Encrypt File (This overwrites the existing file)")
+    print("-c --create  Creates a Self Encrypting Python Script")
 
 if __name__ == "__main__":
     main()
