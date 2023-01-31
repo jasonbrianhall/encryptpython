@@ -132,7 +132,7 @@ def main():
 
     encrypt=False
     filename=None
-    selfencrypted=True
+    selfencrypted=False
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             show_help()
