@@ -2,7 +2,7 @@
 
 '''
 
-This code encrypted a python script using AES256 encryption; it has two modes, self-contained python script or it can run the encrypted data
+This code encrypted a python script using Fernet encryption; it has two modes, self-contained python script or it can run the encrypted data
 
 Written by Jason Hall (jasonbrianhall@gmail.com)
 
