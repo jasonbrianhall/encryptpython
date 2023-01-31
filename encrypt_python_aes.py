@@ -139,7 +139,7 @@ def run_encrypted_script(password):
     try:
         pt = cipher.decrypt(data[1+AES.block_size:])
         exec(pt)
-    except:
+    except ValueError:
         print("\t** Invalid password!!!")
         sys.exit(1)
 

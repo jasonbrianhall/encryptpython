@@ -103,9 +103,9 @@ def run_encrypted_script(password):
     try:
         # Decrypt the data
         decrypted_data = f.decrypt(data)
-    # Run the decrypted script
+        # Run the decrypted script
         exec(decrypted_data)
-    except:
+    except ValueError:
         print("\t** Invalid password!!!")
         sys.exit(1)
 
