@@ -110,7 +110,7 @@ def run_encrypted_script(password):
         sys.exit(1)
 
 def main():
-    password = getpass.getpass(prompt='Enter password: ')
+    password = getpass.getpass(prompt='Enter password to decrypt the file and execute it: ')
     run_encrypted_script(password)
 
 if __name__ == "__main__":
@@ -144,19 +144,20 @@ def main():
         elif opt in ("-c", "--create"):
             selfencrypted=True
 
+    print(encrypt, filename, selfencrypted)
     if encrypt==True and not filename==None:
-        password = getpass.getpass(prompt='Enter password: ')
+        password = getpass.getpass(prompt='Enter password to encrypt file: ')
         encrypt_script(filename, password)
         sys.exit(0)
     elif not filename==None and selfencrypted==False:
-        password = getpass.getpass(prompt='Enter password: ')
+        password = getpass.getpass(prompt='Enter password to decrypt file: ')
         try:
             run_encrypted_script(filename, password)
         except:
             print("Script isn't encrypted or wrong password!!!")
         sys.exit(0)
     elif selfencrypted==True and not filename==None:
-        password = getpass.getpass(prompt='Enter password: ')
+        password = getpass.getpass(prompt='Enter password for self encrypted file: ')
         create_encrypted_script(filename, password)
         sys.exit(0)
 
