@@ -136,7 +136,6 @@ def run_encrypted_script(password):
     data=base64.b64decode(encrypted_data)
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
-    print(len(data[1+AES.block_size:]), iv, offset)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     pt = cipher.decrypt(data[1+AES.block_size:])
     exec(pt)
