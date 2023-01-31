@@ -67,13 +67,9 @@ def run_encrypted_script(file_name, password):
     key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
-    print("Offset is", offset)
     cipher = AES.new(key, AES.MODE_CBC, iv)
     pt = cipher.decrypt(data[1+AES.block_size:])
-    print(pt.decode()[:offset])
-
-
-
+    exec(pt)
     #exec(decrypted_data[:offset])
 
 def create_encrypted_script(filename, password):
