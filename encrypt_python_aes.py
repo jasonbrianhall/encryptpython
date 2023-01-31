@@ -136,8 +136,12 @@ def run_encrypted_script(password):
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    pt = cipher.decrypt(data[1+AES.block_size:])
-    exec(pt)
+    try:
+        pt = cipher.decrypt(data[1+AES.block_size:])
+        exec(pt)
+    except:
+        print("\t** Invalid password!!!")
+        sys.exit(1)
 
 def main():
     password = getpass.getpass(prompt='Enter password to decrypt script: ')

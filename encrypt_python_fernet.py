@@ -106,7 +106,7 @@ def run_encrypted_script(password):
     # Run the decrypted script
         exec(decrypted_data)
     except:
-        print("Wrong password!!!")
+        print("\t** Invalid password!!!")
         sys.exit(1)
 
 def main():
