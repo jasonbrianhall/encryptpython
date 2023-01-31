@@ -18,7 +18,7 @@ def encrypt_script(file_name, password):
     with open(file_name, 'rb') as f:
         data = f.read()
     if not len(data)%16==0:
-        data=data+b" "*(16-(len(data)%16))
+        data=data+b"\0"*(16-(len(data)%16))
     # Derive a key from the password
     password = password.encode()
     salt = b'salt_'
@@ -29,15 +29,15 @@ def encrypt_script(file_name, password):
         iterations=100000,
         backend=default_backend()
     )
-    temp=kdf.derive(password)
-    key = base64.urlsafe_b64encode(temp[:16])
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
+
+    # Generate random CBC Key
     cbckey=""
     for x in range(0,16):
         cbckey=cbckey+random.choice(string.printable)
     cbckey = cbckey.encode()
     #cbckey=base64.urlsafe_b64encode(kdf.derive(password))
     backend = default_backend()
-    print(key)
     cipher = Cipher(algorithms.AES(key), modes.CBC(cbckey), backend=backend)
     encryptor = cipher.encryptor()
     ct = encryptor.update(data) + encryptor.finalize()
@@ -60,7 +60,7 @@ def run_encrypted_script(file_name, password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password))
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
     f = Fernet(key)
     # Decrypt the data
     decrypted_data = f.decrypt(data)
