@@ -38,8 +38,8 @@ def encrypt_script(file_name, password):
     # Generate a random initialization vector (IV)
     iv=""
     for x in range(0,AES.block_size):
-        iv = iv+random.choice(string.printable)
-    iv=iv.encode()
+        iv = iv+chr(random.randint(0,255))
+    iv=iv.encode()[:16]
     # Pad the data to a multiple of the block size
     padding_length = AES.block_size - (len(data) % AES.block_size)
     offset=chr(padding_length).encode()
@@ -96,8 +96,9 @@ def create_encrypted_script(filename, password):
     # Generate a random initialization vector (IV)
     iv=""
     for x in range(0,AES.block_size):
-        iv = iv+random.choice(string.printable)
-    iv=iv.encode()
+        iv = iv+chr(random.randint(0,255))
+
+    iv=iv.encode()[:16]
     # Pad the data to a multiple of the block size
     padding_length = AES.block_size - (len(data) % AES.block_size)
     offset=chr(padding_length).encode()
