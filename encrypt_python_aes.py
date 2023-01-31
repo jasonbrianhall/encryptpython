@@ -103,7 +103,6 @@ def create_encrypted_script(filename, password):
     cipher = AES.new(key, AES.MODE_CBC, iv)
     
     # Encrypt the data and return the IV and encrypted data as a tuple
-    print("length of data = ", len(data))
     ct = cipher.encrypt(data)
     ct = offset+iv+ct
     data=b"""#!/usr/bin/env python
