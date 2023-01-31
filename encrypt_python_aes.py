@@ -28,7 +28,7 @@ def encrypt_script(file_name, password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:AES.block_size])
 
     # Generate a random initialization vector (IV)
     iv=""
@@ -64,7 +64,7 @@ def run_encrypted_script(file_name, password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:AES.block_size])
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
