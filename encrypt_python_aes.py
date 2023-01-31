@@ -18,12 +18,6 @@ def encrypt_script(file_name, password):
     # Read the file
     with open(file_name, 'rb') as f:
         data = f.read()
-        #offset=0
-        #offset=chr(offset).encode()
-    if not len(data)%16==0:
-        #offset=16-(len(data)%16)
-        #offset=chr(offset).encode()
-        data=data+b"\0"*(16-(len(data)%16))
     # Derive a key from the password
     password = password.encode()
     salt = b'salt_'
@@ -43,6 +37,8 @@ def encrypt_script(file_name, password):
     iv=iv.encode()
     # Pad the data to a multiple of the block size
     padding_length = AES.block_size - (len(data) % AES.block_size)
+    offset=chr(padding_length).encode()
+
     data = data + (chr(padding_length) * padding_length).encode()
     
     # Create a new AES cipher object
@@ -51,7 +47,7 @@ def encrypt_script(file_name, password):
     # Encrypt the data and return the IV and encrypted data as a tuple
     ct = cipher.encrypt(data)
     with open(file_name, 'wb') as f:
-        f.write(iv+ct)
+        f.write(offset+iv+ct)
 
 # Decrypt and run the script
 def run_encrypted_script(file_name, password):
@@ -69,10 +65,12 @@ def run_encrypted_script(file_name, password):
         backend=default_backend()
     )
     key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
-    iv=data[0:AES.block_size]
+    iv=data[1:AES.block_size+1]
+    offset=-1*data[0]
+    print("Offset is", offset)
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    pt = cipher.decrypt(data[AES.block_size:])
-    print(pt.decode())
+    pt = cipher.decrypt(data[1+AES.block_size:])
+    print(pt.decode()[:offset])
 
 
 
