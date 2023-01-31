@@ -144,7 +144,6 @@ def main():
         elif opt in ("-c", "--create"):
             selfencrypted=True
 
-    print(encrypt, filename, selfencrypted)
     if encrypt==True and not filename==None:
         password = getpass.getpass(prompt='Enter password to encrypt file: ')
         encrypt_script(filename, password)
