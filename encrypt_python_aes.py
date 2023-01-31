@@ -28,7 +28,7 @@ def encrypt_script(file_name, password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password)[:AES.block_size])
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
 
     # Generate a random initialization vector (IV)
     iv=""
@@ -64,7 +64,7 @@ def run_encrypted_script(file_name, password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password)[:AES.block_size])
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
@@ -86,25 +86,42 @@ def create_encrypted_script(filename, password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password))
-    f = Fernet(key)
-    # Encrypt the data
-    encrypted_data = f.encrypt(data)
-    # Write the encrypted data to a new file
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:AES.block_size])
+
+    # Generate a random initialization vector (IV)
+    iv=""
+    for x in range(0,AES.block_size):
+        iv = iv+random.choice(string.printable)
+    iv=iv.encode()
+    # Pad the data to a multiple of the block size
+    padding_length = AES.block_size - (len(data) % AES.block_size)
+    offset=chr(padding_length).encode()
+
+    data = data + (chr(padding_length) * padding_length).encode()
+    
+    # Create a new AES cipher object
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    
+    # Encrypt the data and return the IV and encrypted data as a tuple
+    print("length of data = ", len(data))
+    ct = cipher.encrypt(data)
+    ct = offset+iv+ct
     data=b"""#!/usr/bin/env python
+import os
 import base64
-from cryptography.fernet import Fernet
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from Crypto.Cipher import AES
 import sys
+import getopt
 import getpass
-
 
 # Decrypt and run the script
 def run_encrypted_script(password):
     # Read the data
-    data = b\'\'\'""" + encrypted_data + b"""\'\'\'
+    encrypted_data = b\'\'\'""" + base64.b64encode(ct) + b"""\'\'\'
     # Derive a key from the password
     password = password.encode()
     salt = b'salt_'
@@ -115,19 +132,17 @@ def run_encrypted_script(password):
         iterations=100000,
         backend=default_backend()
     )
-    key = base64.urlsafe_b64encode(kdf.derive(password))
-    f = Fernet(key)
-    try:
-        # Decrypt the data
-        decrypted_data = f.decrypt(data)
-    # Run the decrypted script
-        exec(decrypted_data)
-    except:
-        print("Wrong password!!!")
-        sys.exit(1)
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
+    data=base64.b64decode(encrypted_data)
+    iv=data[1:AES.block_size+1]
+    offset=-1*data[0]
+    print(len(data[1+AES.block_size:]), iv, offset)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    pt = cipher.decrypt(data[1+AES.block_size:])
+    exec(pt)
 
 def main():
-    password = getpass.getpass(prompt='Enter password: ')
+    password = getpass.getpass(prompt='Enter password to decrypt script: ')
     run_encrypted_script(password)
 
 if __name__ == "__main__":
