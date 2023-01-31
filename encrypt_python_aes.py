@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from Crypto.Cipher import AES
 import sys
 import getopt
 import getpass
@@ -17,7 +18,11 @@ def encrypt_script(file_name, password):
     # Read the file
     with open(file_name, 'rb') as f:
         data = f.read()
+        #offset=0
+        #offset=chr(offset).encode()
     if not len(data)%16==0:
+        #offset=16-(len(data)%16)
+        #offset=chr(offset).encode()
         data=data+b"\0"*(16-(len(data)%16))
     # Derive a key from the password
     password = password.encode()
@@ -31,19 +36,22 @@ def encrypt_script(file_name, password):
     )
     key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
 
-    # Generate random CBC Key
-    cbckey=""
-    for x in range(0,16):
-        cbckey=cbckey+random.choice(string.printable)
-    cbckey = cbckey.encode()
-    #cbckey=base64.urlsafe_b64encode(kdf.derive(password))
-    backend = default_backend()
-    cipher = Cipher(algorithms.AES(key), modes.CBC(cbckey), backend=backend)
-    encryptor = cipher.encryptor()
-    ct = encryptor.update(data) + encryptor.finalize()
-    # Write the encrypted data to a new file
+    # Generate a random initialization vector (IV)
+    iv=""
+    for x in range(0,AES.block_size):
+        iv = iv+random.choice(string.printable)
+    iv=iv.encode()
+    # Pad the data to a multiple of the block size
+    padding_length = AES.block_size - (len(data) % AES.block_size)
+    data = data + (chr(padding_length) * padding_length).encode()
+    
+    # Create a new AES cipher object
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    
+    # Encrypt the data and return the IV and encrypted data as a tuple
+    ct = cipher.encrypt(data)
     with open(file_name, 'wb') as f:
-        f.write(ct)
+        f.write(iv+ct)
 
 # Decrypt and run the script
 def run_encrypted_script(file_name, password):
@@ -61,11 +69,14 @@ def run_encrypted_script(file_name, password):
         backend=default_backend()
     )
     key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
-    f = Fernet(key)
-    # Decrypt the data
-    decrypted_data = f.decrypt(data)
-    # Run the decrypted script
-    exec(decrypted_data)
+    iv=data[0:AES.block_size]
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    pt = cipher.decrypt(data[AES.block_size:])
+    print(pt.decode())
+
+
+
+    #exec(decrypted_data[:offset])
 
 def create_encrypted_script(filename, password):
     # Read the file
@@ -144,7 +155,7 @@ def main():
 
     encrypt=False
     filename=None
-    selfencrypted=True
+    selfencrypted=False
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             show_help()
@@ -162,11 +173,11 @@ def main():
         sys.exit(0)
     elif not filename==None and selfencrypted==False:
         password = getpass.getpass(prompt='Enter password: ')
-        try:
-            run_encrypted_script(filename, password)
-        except:
-            print("Script isn't encrypted or wrong password!!!")
-        sys.exit(0)
+        #try:
+        run_encrypted_script(filename, password)
+        #except:
+            #print("Script isn't encrypted or wrong password!!!")
+        #sys.exit(0)
     elif selfencrypted==True and not filename==None:
         password = getpass.getpass(prompt='Enter password: ')
         create_encrypted_script(filename, password)
