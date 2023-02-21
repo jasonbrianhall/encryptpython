@@ -144,6 +144,7 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 				data={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
 				prolist.append(data)
 		predictable_random_order(password, prolist)
+		# This code could crash with very large messages since it doesn't calculate datalength until after it appends junk data to the message 
 		for data in prolist:
 			r=data.get("red")
 			g=data.get("green")
