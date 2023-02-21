@@ -60,7 +60,10 @@ def encode_image(image_filename, outfile, message):
 			#print(r,g,b,a)
 			pixels[i, j] = (r, g, b, a)
 
+	temp=outfile.split(".", 1)
+	outfile=temp[0]+".png"
 	im.save(outfile)
+	print(outfile)
 	print("Message encoded successfully.")
 
 def decode_image(encoded_image_filename):
