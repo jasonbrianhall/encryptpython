@@ -103,7 +103,7 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 				counter+=1		
 			i=superdata.get("i")
 			j=superdata.get("j")
-			print(i,j)
+			#print(i,j)
 			pixels[superdata.get("i"), superdata.get("j")] = (r, g, b, a)
 			if counter>=len(data):
 				break
@@ -177,7 +177,7 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 	return binary_message    
     
 '''# Example usage
-message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world!').encode("latin-1")
+message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world to the nth degree!').encode("latin-1")
 encode_image('test.png', 'outfile.png', message, pro=True, password="bob")
 print(decode_image('outfile.png', pro=True, password="bob"))'''
 
