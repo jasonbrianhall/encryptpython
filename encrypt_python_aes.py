@@ -232,6 +232,7 @@ def main():
     filename=None
     selfencrypted=False
     pngfile=None
+    usepro=False
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             show_help()
@@ -244,6 +245,8 @@ def main():
             selfencrypted=True
         elif opt in ("-p", "--png"):
             pngfile = arg
+        elif opt in ("-P", "--pro"):
+            usepro=True
             
     if encrypt==True and not filename==None:
         if pngfile==None:
@@ -252,7 +255,10 @@ def main():
         else:
             password = getpass.getpass(prompt='Enter password to encrypt the PNG: ')
             data=get_encrypt_script(filename, password)
-            steghide.encode_image(pngfile, pngfile, data)
+            if usepro==False:
+                steghide.encode_image(pngfile, pngfile, data)
+            else:
+                steghide.encode_image(pngfile, pngfile, data, pro=True, password=password)
         sys.exit(0)
     elif not filename==None and selfencrypted==False:
         password = getpass.getpass(prompt='Enter password to decrypt/run encrypted script: ')
@@ -260,7 +266,10 @@ def main():
         sys.exit(0)
     elif not pngfile==None and selfencrypted==False:
         password = getpass.getpass(prompt='Enter password to decrypt the PNG: ')
-        data=steghide.decode_image(pngfile)
+        if usepro==False:
+            data=steghide.decode_image(pngfile)
+        else:
+            data=steghide.decode_image(pngfile, pro=True, password=password)
         run_encrypted_data(data, password)
         sys.exit(0)
     elif selfencrypted==True and not filename==None:

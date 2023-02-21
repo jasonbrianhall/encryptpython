@@ -65,7 +65,6 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 				if counter>=len(data):
 					break
 	else:
-				
 		prolist=[]
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
@@ -103,7 +102,7 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 				counter+=1		
 			i=superdata.get("i")
 			j=superdata.get("j")
-			#print(i,j)
+			print(i,j)
 			pixels[superdata.get("i"), superdata.get("j")] = (r, g, b, a)
 			if counter>=len(data):
 				break
