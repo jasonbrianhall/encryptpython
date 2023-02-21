@@ -232,7 +232,7 @@ def main():
     filename=None
     selfencrypted=False
     pngfile=None
-    usepro=False
+    usepro=True
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             show_help()
@@ -246,7 +246,7 @@ def main():
         elif opt in ("-p", "--png"):
             pngfile = arg
         elif opt in ("-P", "--pro"):
-            usepro=True
+            usepro=False
             
     if encrypt==True and not filename==None:
         if pngfile==None:
@@ -291,7 +291,7 @@ def show_help():
     print("-e --encrypt Encrypt File (This overwrites the existing file)")
     print("-c --create  Creates a Self Encrypting Python Script")
     print("-p --png     Steganography PNG file where the script is hidden (when decrypting, don't include -i)")
-    print("-P --pro     Predictable Random Order (more secure)")
+    print("-P --pro     Disable Predictable Random Order (disabling it makes it less secure)")
 
 if __name__ == "__main__":
     main()
