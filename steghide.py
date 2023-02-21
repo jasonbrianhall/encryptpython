@@ -5,6 +5,12 @@ def encode_image(image_filename, outfile, message):
 	# Open the PNG image
 	im = Image.open(image_filename)
 
+	# Checks if it has an alpha layer and adds it if it doesn't
+	has_alpha = im.mode.endswith('A')
+	if not has_alpha:
+		# Create a new image with an alpha layer
+		im.putalpha(255)
+
 	# Convert the message to a binary string
 	binary_message = ''
 	for c in message.decode('latin-1'):
