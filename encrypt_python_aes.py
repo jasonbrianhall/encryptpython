@@ -223,7 +223,7 @@ if __name__ == "__main__":
 # Main function
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:ecp:", ["help", "input="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:ecp:P", ["help", "input="])
     except getopt.GetoptError:
         show_help()
         sys.exit(2)
@@ -282,6 +282,7 @@ def show_help():
     print("-e --encrypt Encrypt File (This overwrites the existing file)")
     print("-c --create  Creates a Self Encrypting Python Script")
     print("-p --png     Steganography PNG file where the script is hidden (when decrypting, don't include -i)")
+    print("-P --pro     Predictable Random Order (more secure)")
 
 if __name__ == "__main__":
     main()
