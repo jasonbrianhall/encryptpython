@@ -17,6 +17,42 @@ import getopt
 import getpass
 import string
 import random
+import steghide
+
+# Get Encrypted Data
+def get_encrypt_script(file_name, password):
+    # Read the file
+    with open(file_name, 'rb') as f:
+        data = f.read()
+    # Derive a key from the password
+    password = password.encode()
+    salt = b'salt_'
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
+
+    # Generate a random initialization vector (IV)
+    iv=""
+    for x in range(0,AES.block_size):
+        iv = iv+chr(random.randint(0,255))
+    iv=iv.encode()[:16]
+    # Pad the data to a multiple of the block size
+    padding_length = AES.block_size - (len(data) % AES.block_size)
+    offset=chr(padding_length).encode()
+
+    data = data + (chr(padding_length) * padding_length).encode()
+    
+    # Create a new AES cipher object
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    
+    # Encrypt the data and return the IV and encrypted data as a tuple
+    ct = cipher.encrypt(data)
+    return offset+iv+ct
 
 # Encrypt the script
 def encrypt_script(file_name, password):
@@ -53,6 +89,28 @@ def encrypt_script(file_name, password):
     ct = cipher.encrypt(data)
     with open(file_name, 'wb') as f:
         f.write(offset+iv+ct)
+
+# Decrypt and run the script
+def run_encrypted_data(data, password):
+
+    # Derive a key from the password
+    password = password.encode()
+    salt = b'salt_'
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(password)[:16])
+    iv=data[1:AES.block_size+1]
+    offset=-1*data[0]
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    pt = cipher.decrypt(data[1+AES.block_size:])
+    exec(pt)
+    #exec(decrypted_data[:offset])
+
 
 # Decrypt and run the script
 def run_encrypted_script(file_name, password):
@@ -165,7 +223,7 @@ if __name__ == "__main__":
 # Main function
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hi:ec", ["help", "input="])
+        opts, args = getopt.getopt(sys.argv[1:], "hi:ecp:", ["help", "input="])
     except getopt.GetoptError:
         show_help()
         sys.exit(2)
@@ -173,6 +231,7 @@ def main():
     encrypt=False
     filename=None
     selfencrypted=False
+    pngfile=None
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             show_help()
@@ -183,18 +242,27 @@ def main():
             encrypt=True
         elif opt in ("-c", "--create"):
             selfencrypted=True
-
+        elif opt in ("-p", "--png"):
+            pngfile = arg
+            
     if encrypt==True and not filename==None:
-        password = getpass.getpass(prompt='Enter password to encrypt the script: ')
-        encrypt_script(filename, password)
+        if pngfile==None:
+            password = getpass.getpass(prompt='Enter password to encrypt the script: ')
+            encrypt_script(filename, password)
+        else:
+            password = getpass.getpass(prompt='Enter password to encrypt the PNG: ')
+            data=get_encrypt_script(filename, password)
+            steghide.encode_image(pngfile, pngfile, data)
         sys.exit(0)
     elif not filename==None and selfencrypted==False:
         password = getpass.getpass(prompt='Enter password to decrypt/run encrypted script: ')
-        #try:
         run_encrypted_script(filename, password)
-        #except:
-            #print("Script isn't encrypted or wrong password!!!")
-        #sys.exit(0)
+        sys.exit(0)
+    elif not pngfile==None and selfencrypted==False:
+        password = getpass.getpass(prompt='Enter password to decrypt the PNG: ')
+        data=steghide.decode_image(pngfile)
+        run_encrypted_data(data, password)
+        sys.exit(0)
     elif selfencrypted==True and not filename==None:
         password = getpass.getpass(prompt='Enter password to create encrypted script: ')
         create_encrypted_script(filename, password)
@@ -213,6 +281,7 @@ def show_help():
     print("-i --input   Provide a filename as input (required)")
     print("-e --encrypt Encrypt File (This overwrites the existing file)")
     print("-c --create  Creates a Self Encrypting Python Script")
+    print("-p --png     Steganography PNG file where the script is hidden (when decrypting, don't include -i)")
 
 if __name__ == "__main__":
     main()
