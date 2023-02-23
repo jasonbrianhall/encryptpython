@@ -175,12 +175,19 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 			if counter>=len(data):
 				break
 
+	temp=outfile.split(".", 1)
 	if has_alpha:
-		temp=outfile.split(".", 1)
 		outfile=temp[0]+".png"
+	else:
+		if len(temp)>1:
+			if not (temp[1].lower()=="bmp" or temp[1].lower()=="tif" or temp[1].lower()=="png"):
+				outfile=temp[0]+".png"
+		else:
+			outfile=temp[0]+".png"
+			
 	im.save(outfile)
 	#print(outfile)
-	#print("Message encoded successfully.")
+	print("Message encoded successfully; saved as " + outfile)
 
 # Decodes data in PNG using 32 bit length
 def decode_image(encoded_image_filename, pro=False, password="", sigbits=1):
