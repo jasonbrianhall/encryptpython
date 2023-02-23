@@ -125,11 +125,12 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 			if counter>=len(data):
 				break
 
-	temp=outfile.split(".", 1)
-	outfile=temp[0]+".png"
+	if has_alpha:
+		temp=outfile.split(".", 1)
+		outfile=temp[0]+".png"
 	im.save(outfile)
 	#print(outfile)
-	print("Message encoded successfully.")
+	#print("Message encoded successfully.")
 
 # Decodes data in PNG using 32 bit length
 def decode_image(encoded_image_filename, pro=False, password=""):
@@ -211,9 +212,42 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 def testmain():
 	# Example usage
 	password="bobthemagicalpenguinwholovesbacon"
-	message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world to the nth degree!').encode("latin-1")
+	message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world to the nth degree!\n\nCowabunga dude\n\n').encode("latin-1")
+	print("Message being encoded: ", message)
+
+	print("\nTesting PRO Features")
 	encode_image('test.jpg', 'outfile.png', message, pro=True, password=password)
 	print(decode_image('outfile.png', pro=True, password=password))
+
+
+	# Testing pro=False (insecure mode)
+	print("\nTesting Insecure Mode")
+	encode_image('test.jpg', 'outfile.png', message, pro=False, password=password)
+	print(decode_image('outfile.png', pro=False, password=password))
+
+	# Testing JPEG MOde (this *should* fail); only getting 100 bytes
+	print("\nTesting JPEG; shouldn't work")
+	encode_image('test.jpg', 'outfile.jpg', message, pro=False, password=password)
+	data=decode_image('outfile.jpg', pro=False, password=password)
+	print(data[0:100])
+
+	# Testing TIFF MOde (this *should* work in insecure)
+	print("\nTesting TIF; should work")
+	encode_image('test.jpg', 'outfile.tif', message, pro=True, password=password)
+	print(decode_image('outfile.tif', pro=True, password=password))
+
+	# Testing BMP MOde (this *should* work)
+	print("\nTesting BMP; should work")
+	encode_image('test.jpg', 'outfile.bmp', message, pro=True, password=password)
+	print(decode_image('outfile.bmp', pro=True, password=password))
+
+	# Testing WEBP MOde (this *should* work)
+	print("\nTesting WEBP; shouldn't work")
+	encode_image('test.jpg', 'outfile.webp', message, pro=False, password=password)
+	data=decode_image('outfile.webp', pro=False, password=password)
+	print(data[0:100])
+
+
 
 if __name__ == "__main__":
     testmain()  
