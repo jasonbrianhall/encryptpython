@@ -42,6 +42,11 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 	adder=ander-1
 	ander=256-(ander)
 	print(data)
+	
+	beginingmultiplier=1
+	for x in range(0,sigbits-1):
+		beginingmultiplier*=2
+
 	if pro==False:
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
@@ -52,40 +57,56 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 				
 				if counter<len(data):
 					r=ander&r
-					multiplier=1
+					multiplier=beginingmultiplier
+					temp=0
 					for x in range(0,sigbits):
 						if counter<len(data):
 							if data[counter]=="1":
-								r+=1*multiplier
-							multiplier*=2
+								r+=1*int(multiplier)
+								temp+=1*int(multiplier)
+							multiplier/=2
 							counter+=1
+					print(format(temp, f'0{sigbits}b'), end="")
 				if counter<len(data):
 					g=ander&g
-					multiplier=1
+					multiplier=beginingmultiplier
+					temp=0
 					for x in range(0,sigbits):
 						if counter<len(data):
 							if data[counter]=="1":
-								g+=1*multiplier
-							multiplier*=2
+								g+=1*int(multiplier)
+								temp+=1*int(multiplier)
+							multiplier/=2
 							counter+=1
+					print(format(temp, f'0{sigbits}b'), end="")
+
 				if counter<len(data):
 					b=ander&b
-					multiplier=1
+					multiplier=beginingmultiplier
+					temp=0
 					for x in range(0,sigbits):
 						if counter<len(data):
 							if data[counter]=="1":
-								b+=1*multiplier
-							multiplier*=2
+								b+=1*int(multiplier)
+								temp=+1*int(multiplier)
+							multiplier/=2
 							counter+=1
+					print(format(temp, f'0{sigbits}b'), end="")
+
 				if has_alpha==True and counter<len(data):
-					a=ander&a
-					multiplier=1
-					for x in range(0,sigbits):
-						if counter<len(data):
-							if data[counter]=="1":
-								a+=1*multiplier
-							multiplier*=2
-							counter+=1
+					if counter<len(data):
+						a=ander&a
+						multiplier=beginingmultiplier
+						temp=0
+						for x in range(0,sigbits):
+							if counter<len(data):
+								if data[counter]=="1":
+									a+=1*int(multiplier)
+									temp=+1*int(multiplier)
+								multiplier/=2
+								counter+=1
+						
+					print(format(temp, f'0{sigbits}b'), end="")
 				#print(r,g,b,a)
 				if has_alpha:
 					pixels[i, j] = (r, g, b, a)
@@ -108,9 +129,6 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 		predictable_random_order(password, prolist)
 		
 		counter=0
-		beginingmultiplier=1
-		for x in range(0,sigbits-1):
-			beginingmultiplier*=2
 
 		for superdata in prolist:
 			i=superdata.get("i")
@@ -295,8 +313,8 @@ def testmain():
 	print("Message being encoded: ", message)
 
 	print("\nTesting PRO Features")
-	encode_image('test.jpg', 'outfile-pro.png', message, pro=True, password=password, sigbits=8)
-	print(decode_image('outfile-pro.png', pro=True, password=password, sigbits=8))
+	encode_image('test.jpg', 'outfile-pro.png', message, pro=False, password=password, sigbits=8)
+	print(decode_image('outfile-pro.png', pro=False, password=password, sigbits=8))
 
 
 	'''# Testing pro=False (insecure mode)
