@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from steghide import encode_image, decode_image
 
 
