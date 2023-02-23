@@ -78,21 +78,22 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 			for j in range(im.size[1]):
 				if has_alpha:
 					r, g, b, a = pixels[i, j]
-					newdata={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
+					#newdata={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
 				else:
 					r, g, b    = pixels[i, j]
-					newdata={"i": i, "j": j, "red": r, "green": g, "blue": b}
-
+					#newdata={"i": i, "j": j, "red": r, "green": g, "blue": b}
+				newdata={"i": i, "j": j}
 				prolist.append(newdata)
 		predictable_random_order(password, prolist)
 		
 		counter=0
 		for superdata in prolist:
-			r=superdata.get("red")
-			g=superdata.get("green")
-			b=superdata.get("blue")
+			i=superdata.get("i")
+			j=superdata.get("j")
 			if has_alpha:
-				a=superdata.get("alpha")
+				r, g, b, a = pixels[i, j]
+			else:
+				r, g, b = pixels[i,j]
 			if counter<len(data):
 				r=254&r
 				if data[counter]=="1":
@@ -127,7 +128,7 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 	temp=outfile.split(".", 1)
 	outfile=temp[0]+".png"
 	im.save(outfile)
-	print(outfile)
+	#print(outfile)
 	print("Message encoded successfully.")
 
 # Decodes data in PNG using 32 bit length
@@ -166,20 +167,20 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 			for j in range(im.size[1]):
 				if has_alpha:
 					r, g, b, a = pixels[i, j]
-					data={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
 				else:
 					r, g, b = pixels[i, j]
-					data={"i": i, "j": j, "red": r, "green": g, "blue": b}
+				data={"i": i, "j": j}
 				
 				prolist.append(data)
 		predictable_random_order(password, prolist)
 		# This code could crash with very large messages since it doesn't calculate datalength until after it appends junk data to the message 
 		for data in prolist:
-			r=data.get("red")
-			g=data.get("green")
-			b=data.get("blue")
+			i=data.get("i")
+			j=data.get("j")
 			if has_alpha:
-				a=data.get("alpha")
+				r, g, b, a = pixels[i, j]
+			else:
+				r, g, b    = pixels[i, j]
 			r=r%2
 			message=message+str(r)
 			g=g%2
@@ -209,9 +210,10 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 	
 def testmain():
 	# Example usage
+	password="bobthemagicalpenguinwholovesbacon"
 	message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world to the nth degree!').encode("latin-1")
-	encode_image('test.jpg', 'outfile.png', message, pro=True, password="bob")
-	print(decode_image('outfile.png', pro=True, password="bob"))
+	encode_image('test.jpg', 'outfile.png', message, pro=True, password=password)
+	print(decode_image('outfile.png', pro=True, password=password))
 
 if __name__ == "__main__":
     testmain()  
