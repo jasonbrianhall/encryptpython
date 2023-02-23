@@ -2,16 +2,17 @@ from PIL import Image
 from pro import predictable_random_order
 
 # Encodes data into PNG using 32 bit length
-def encode_image(image_filename, outfile, message, pro=False, password=""):
+def encode_image(image_filename, outfile, message, pro=False, password="", addalpha=False):
 
 	# Open the PNG image
 	im = Image.open(image_filename)
 
 	# Checks if it has an alpha layer and adds it if it doesn't
 	has_alpha = im.mode.endswith('A')
-	if not has_alpha:
+	if addalpha==True and not has_alpha:
 		# Create a new image with an alpha layer
 		im.putalpha(255)
+		has_alpha=True
 
 	# Convert the message to a binary string
 	binary_message = ''
@@ -38,7 +39,11 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 	if pro==False:
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
-				r, g, b, a = pixels[i, j]
+				if has_alpha:
+					r, g, b, a = pixels[i, j]
+				else:
+					r, g, b    = pixels[i, j]
+				
 				if counter<len(data):
 					r=254&r
 					if data[counter]=="1":
@@ -55,21 +60,29 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 					if data[counter]=="1":
 						b+=1
 					counter+=1
-				if counter<len(data):
+				if has_alpha==True and counter<len(data):
 					a=254&a
 					if data[counter]=="1":
 						a+=1
 					counter+=1		
 				#print(r,g,b,a)
-				pixels[i, j] = (r, g, b, a)
+				if has_alpha:
+					pixels[i, j] = (r, g, b, a)
+				else:
+					pixels[i, j] = (r, g, b)				
 				if counter>=len(data):
 					break
 	else:
 		prolist=[]
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
-				r, g, b, a = pixels[i, j]
-				newdata={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
+				if has_alpha:
+					r, g, b, a = pixels[i, j]
+					newdata={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
+				else:
+					r, g, b    = pixels[i, j]
+					newdata={"i": i, "j": j, "red": r, "green": g, "blue": b}
+
 				prolist.append(newdata)
 		predictable_random_order(password, prolist)
 		
@@ -78,7 +91,8 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 			r=superdata.get("red")
 			g=superdata.get("green")
 			b=superdata.get("blue")
-			a=superdata.get("alpha")
+			if has_alpha:
+				a=superdata.get("alpha")
 			if counter<len(data):
 				r=254&r
 				if data[counter]=="1":
@@ -95,7 +109,7 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 				if data[counter]=="1":
 					b+=1
 				counter+=1
-			if counter<len(data):
+			if has_alpha==True and counter<len(data):
 				a=254&a
 				if data[counter]=="1":
 					a+=1
@@ -103,11 +117,13 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 			i=superdata.get("i")
 			j=superdata.get("j")
 			#print(i,j)
-			pixels[superdata.get("i"), superdata.get("j")] = (r, g, b, a)
+			if has_alpha:
+				pixels[superdata.get("i"), superdata.get("j")] = (r, g, b, a)
+			else:
+				pixels[superdata.get("i"), superdata.get("j")] = (r, g, b)			
 			if counter>=len(data):
 				break
 
-			
 	temp=outfile.split(".", 1)
 	outfile=temp[0]+".png"
 	im.save(outfile)
@@ -122,26 +138,39 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 	# Get the pixel data from the image
 	pixels = im.load()
 
+	# Checks if it has an alpha layer and adds it if it doesn't
+	has_alpha = im.mode.endswith('A')
+
 	message=""
 	if pro==False:
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
-				r, g, b, a = pixels[i, j]
+				if has_alpha:
+					r, g, b, a = pixels[i, j]
+				else:
+					r, g, b = pixels[i, j]
+
 				r=r%2
 				message=message+str(r)
 				g=g%2
 				message=message+str(g)				
 				b=b%2
 				message=message+str(b)
-				a=a%2
-				message=message+str(a)
+				if has_alpha:
+					a=a%2
+					message=message+str(a)
 				#print(r,b,g,a)
 	else:
 		prolist=[]
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
-				r, g, b, a = pixels[i, j]
-				data={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
+				if has_alpha:
+					r, g, b, a = pixels[i, j]
+					data={"i": i, "j": j, "red": r, "green": g, "blue": b, "alpha": a}
+				else:
+					r, g, b = pixels[i, j]
+					data={"i": i, "j": j, "red": r, "green": g, "blue": b}
+				
 				prolist.append(data)
 		predictable_random_order(password, prolist)
 		# This code could crash with very large messages since it doesn't calculate datalength until after it appends junk data to the message 
@@ -149,15 +178,17 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 			r=data.get("red")
 			g=data.get("green")
 			b=data.get("blue")
-			a=data.get("alpha")
+			if has_alpha:
+				a=data.get("alpha")
 			r=r%2
 			message=message+str(r)
 			g=g%2
 			message=message+str(g)				
 			b=b%2
 			message=message+str(b)
-			a=a%2
-			message=message+str(a)
+			if has_alpha:
+				a=a%2
+				message=message+str(a)
 			
 	datalength=message[0:32]
 	#print(datalength)
@@ -175,9 +206,14 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 		binary_message+=chrvalue.encode("latin-1")
 
 	return binary_message    
-    
-'''# Example usage
-message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world to the nth degree!').encode("latin-1")
-encode_image('test.png', 'outfile.png', message, pro=True, password="bob")
-print(decode_image('outfile.png', pro=True, password="bob"))'''
+	
+def testmain():
+	# Example usage
+	message=(chr(0)+chr(1)+chr(196)+chr(255)+'Hello, world to the nth degree!').encode("latin-1")
+	encode_image('test.jpg', 'outfile.png', message, pro=True, password="bob")
+	print(decode_image('outfile.png', pro=True, password="bob"))
+
+if __name__ == "__main__":
+    testmain()  
+
 
