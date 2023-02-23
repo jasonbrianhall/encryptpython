@@ -231,17 +231,17 @@ def testmain():
 	data=decode_image('outfile.jpg', pro=False, password=password)
 	print(data[0:100])
 
-	# Testing TIFF MOde (this *should* work in insecure)
+	# Testing TIFF MOde (this *should* work; secure)
 	print("\nTesting TIF; should work")
 	encode_image('test.jpg', 'outfile.tif', message, pro=True, password=password)
 	print(decode_image('outfile.tif', pro=True, password=password))
 
-	# Testing BMP MOde (this *should* work)
+	# Testing BMP MOde (this *should* work; secure)
 	print("\nTesting BMP; should work")
 	encode_image('test.jpg', 'outfile.bmp', message, pro=True, password=password)
 	print(decode_image('outfile.bmp', pro=True, password=password))
 
-	# Testing WEBP MOde (this *should* work)
+	# Testing WEBP MOde (this *shouldn't* work)
 	print("\nTesting WEBP; shouldn't work")
 	encode_image('test.jpg', 'outfile.webp', message, pro=False, password=password)
 	data=decode_image('outfile.webp', pro=False, password=password)
