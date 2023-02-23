@@ -1,8 +1,8 @@
 from PIL import Image
 from pro import predictable_random_order
 
-# Encodes data into PNG using 32 bit length
-def encode_image(image_filename, outfile, message, pro=False, password="", addalpha=False):
+# Encodes data into Image file (supports non-lossy files such as PNG, BMP, and TIF; sigbits should always be 1 but can be changed for testing)
+def encode_image(image_filename, outfile, message, pro=False, password="", addalpha=False, sigbits=1):
 
 	# Open the PNG image
 	im = Image.open(image_filename)
@@ -36,6 +36,11 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 
 	data=binary_message_length+binary_message
 	counter=0
+	ander=1
+	for x in range(0,sigbits):
+		ander*=2
+	adder=ander-1
+	ander=256-(ander)
 	if pro==False:
 		for i in range(im.size[0]):
 			for j in range(im.size[1]):
@@ -45,26 +50,41 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 					r, g, b    = pixels[i, j]
 				
 				if counter<len(data):
-					r=254&r
-					if data[counter]=="1":
-						r+=1
-
-					counter+=1
+					r=ander&r
+					multiplier=1
+					for x in range(0,sigbits):
+						if counter<len(data):
+							if data[counter]=="1":
+								r+=1*multiplier
+								multiplier*=2
+								counter+=1
 				if counter<len(data):
-					g=254&r
-					if data[counter]=="1":
-						g+=1
-					counter+=1
+					g=ander&g
+					multiplier=1
+					for x in range(0,sigbits):
+						if counter<len(data):
+							if data[counter]=="1":
+								g+=1*multiplier
+								multiplier*=2
+								counter+=1
 				if counter<len(data):
-					b=254&b
-					if data[counter]=="1":
-						b+=1
-					counter+=1
+					b=ander&b
+					multiplier=1
+					for x in range(0,sigbits):
+						if counter<len(data):
+							if data[counter]=="1":
+								b+=1*multiplier
+								multiplier*=2
+								counter+=1
 				if has_alpha==True and counter<len(data):
-					a=254&a
-					if data[counter]=="1":
-						a+=1
-					counter+=1		
+					a=ander&a
+					multiplier=1
+					for x in range(0,sigbits):
+						if counter<len(data):
+							if data[counter]=="1":
+								a+=1*multiplier
+								multiplier*=2
+								counter+=1
 				#print(r,g,b,a)
 				if has_alpha:
 					pixels[i, j] = (r, g, b, a)
@@ -95,26 +115,42 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 			else:
 				r, g, b = pixels[i,j]
 			if counter<len(data):
-				r=254&r
-				if data[counter]=="1":
-					r+=1
-
-				counter+=1
+				r=ander&r
+				multiplier=1
+				for x in range(0,sigbits):
+					if counter<len(data):
+						if data[counter]=="1":
+							r+=1*multiplier
+							multiplier*=2
+							counter+=1
 			if counter<len(data):
-				g=254&r
-				if data[counter]=="1":
-					g+=1
-				counter+=1
+				g=ander&g
+				multiplier=1
+				for x in range(0,sigbits):
+					if counter<len(data):
+						if data[counter]=="1":
+							g+=1*multiplier
+							multiplier*=2
+							counter+=1
 			if counter<len(data):
-				b=254&b
-				if data[counter]=="1":
-					b+=1
-				counter+=1
+				b=ander&b
+				multiplier=1
+				for x in range(0,sigbits):
+					if counter<len(data):
+						if data[counter]=="1":
+							b+=1*multiplier
+							multiplier*=2
+							counter+=1
 			if has_alpha==True and counter<len(data):
-				a=254&a
-				if data[counter]=="1":
-					a+=1
-				counter+=1		
+				if counter<len(data):
+					a=ander&a
+					multiplier=1
+					for x in range(0,sigbits):
+						if counter<len(data):
+							if data[counter]=="1":
+								a+=1*multiplier
+								multiplier*=2
+								counter+=1
 			i=superdata.get("i")
 			j=superdata.get("j")
 			#print(i,j)
@@ -133,7 +169,7 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 	#print("Message encoded successfully.")
 
 # Decodes data in PNG using 32 bit length
-def decode_image(encoded_image_filename, pro=False, password=""):
+def decode_image(encoded_image_filename, pro=False, password="", sigbits=1):
 
 	# Open the PNG image
 	im = Image.open(encoded_image_filename)
@@ -143,6 +179,10 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 	# Checks if it has an alpha layer and adds it if it doesn't
 	has_alpha = im.mode.endswith('A')
 
+	ander=1
+	for x in range(0,sigbits):
+		ander*=2
+		
 	message=""
 	if pro==False:
 		for i in range(im.size[0]):
@@ -152,15 +192,32 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 				else:
 					r, g, b = pixels[i, j]
 
-				r=r%2
-				message=message+str(r)
-				g=g%2
-				message=message+str(g)				
-				b=b%2
-				message=message+str(b)
+				r=r%ander
+				if r>=(ander/2):
+					message=message+"1"
+				else:
+					message=message+"0"
+
+				g=g%ander
+				if g>=(ander/2):
+					message=message+"1"
+				else:
+					message=message+"0"
+				b=b%ander
+				if b>=(ander/2):
+					message=message+"1"
+				else:
+					message=message+"0"
+
+
+
 				if has_alpha:
-					a=a%2
-					message=message+str(a)
+					a=a%ander
+					if a>=(ander/2):
+						message=message+"1"
+					else:
+						message=message+"0"
+
 				#print(r,b,g,a)
 	else:
 		prolist=[]
@@ -182,15 +239,27 @@ def decode_image(encoded_image_filename, pro=False, password=""):
 				r, g, b, a = pixels[i, j]
 			else:
 				r, g, b    = pixels[i, j]
-			r=r%2
-			message=message+str(r)
-			g=g%2
-			message=message+str(g)				
-			b=b%2
-			message=message+str(b)
+			r=r%ander
+			if r>=(ander/2):
+				message=message+"1"
+			else:
+				message=message+"0"
+			g=g%ander
+			if g>=(ander/2):
+				message=message+"1"
+			else:
+				message=message+"0"
+			b=b%ander
+			if b>=(ander/2):
+				message=message+"1"
+			else:
+				message=message+"0"
 			if has_alpha:
-				a=a%2
-				message=message+str(a)
+				a=a%ander
+				if a>=(ander/2):
+					message=message+"1"
+				else:
+					message=message+"0"
 			
 	datalength=message[0:32]
 	#print(datalength)
@@ -216,8 +285,8 @@ def testmain():
 	print("Message being encoded: ", message)
 
 	print("\nTesting PRO Features")
-	encode_image('test.jpg', 'outfile.png', message, pro=True, password=password)
-	print(decode_image('outfile.png', pro=True, password=password))
+	encode_image('test.jpg', 'outfile-pro.png', message, pro=True, password=password, sigbits=1)
+	print(decode_image('outfile-pro.png', pro=True, password=password, sigbits=1))
 
 
 	# Testing pro=False (insecure mode)
@@ -227,8 +296,8 @@ def testmain():
 
 	# Testing JPEG MOde (this *should* fail); only getting 100 bytes
 	print("\nTesting JPEG; shouldn't work")
-	encode_image('test.jpg', 'outfile.jpg', message, pro=False, password=password)
-	data=decode_image('outfile.jpg', pro=False, password=password)
+	encode_image('test.jpg', 'outfile.jpg', message, pro=False, password=password, sigbits=1)
+	data=decode_image('outfile.jpg', pro=False, password=password, sigbits=1)
 	print(data[0:100])
 
 	# Testing TIFF MOde (this *should* work; secure)
