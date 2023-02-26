@@ -20,13 +20,17 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 	img = Image.open(image_filename)
 
 	pixels=img.load()
+
+	for x in range(img.size[0]):
+		for y in range(img.size[1]):
+			r,g,b=pixels[x,y]
+			print("Before", x,y, r,g,b)
+			
+
 	r_block = []
 	g_block = []
 	b_block = []
-	counter=0
 	for i in range(0, img.size[0]):
-		print(counter)
-		counter+=1
 		r_row=[]
 		g_row=[]
 		b_row=[]
@@ -44,6 +48,10 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 	g_dct_block = dct(g_block)
 	b_dct_block = dct(b_block)
 
+	'''for x in range(len(r_dct_block)):
+		for y in range(len(r_dct_block[x])):
+			print(x,y, r_dct_block[x][y])'''
+
 	ir_dct_block=idct(r_dct_block)
 	ig_dct_block=idct(g_dct_block)
 	ib_dct_block=idct(b_dct_block)
@@ -56,7 +64,11 @@ def encode_image(image_filename, outfile, message, pro=False, password=""):
 	
 	for i in range(0, img.size[0]):
 		for j in range(0, img.size[1]):
-			pixels[i,j] = (int(ir_dct_block[i][j]), int(ig_dct_block[i][j]), int(ib_dct_block[i][j]))
+			r=int(round(ir_dct_block[i][j]))
+			b=int(round(ib_dct_block[i][j]))
+			g=int(round(ig_dct_block[i][j]))
+			print("After", i, j, r,g,b)
+			pixels[i,j] = (r, g, b)
 
 	img.save(outfile)
 
