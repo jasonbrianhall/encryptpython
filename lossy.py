@@ -1,92 +1,104 @@
 from PIL import Image
-import numpy as np
-from scipy.fftpack import dct, idct
 from pro import predictable_random_order
+import numpy as np
 
-message="Hello World from the greatest country in the world!!!  Hello World from the greatest country in the world!!!  Hello World from the greatest country in the world!!!  Hello World from the greatest country in the world!!!  Hello World from the greatest country in the world!!!  Hddello World from the greatest country in the world!!!  Hello World from the greatest country in the world!!!  Hello World from the greatest country in the world!!!  ".encode()
+import math
 
-binary_message = ''
-for c in message.decode('latin-1'):
-	binary_message+=format(ord(c), '08b')
 
-print(binary_message)
+def idct(coefficients):
+	return np.fft.ifft2(coefficients, norm='ortho').real
 
-# Load PNG image
-img = Image.open("test.jpg")
+def dct(signal):
+	return np.fft.fft2(signal, norm='ortho')
 
-# Separate image into color channels
-img_r, img_g, img_b = img.split()
+def encode_image(image_filename, outfile, message, pro=False, password=""):
 
-# Convert color channels to NumPy arrays
-arr_r = np.array(img_r)
-arr_g = np.array(img_g)
-arr_b = np.array(img_b)
+	binary_message = ''
+	for c in message.decode('latin-1'):
+		binary_message+=format(ord(c), '08b')
 
-# Apply 2D DCT to each color channel
-dct_r = dct(dct(arr_r.T, norm='ortho').T, norm='ortho')
-dct_g = dct(dct(arr_g.T, norm='ortho').T, norm='ortho')
-dct_b = dct(dct(arr_b.T, norm='ortho').T, norm='ortho')
+	img = Image.open(image_filename)
 
-'''counter=0
-data=[]
-for x in dct_r:
-	temp={"counter": counter, "data": x}
-	data.append(x)
-	counter+=1
+	pixels=img.load()
+	r_block = []
+	g_block = []
+	b_block = []
+	counter=0
+	for i in range(0, img.size[0]):
+		print(counter)
+		counter+=1
+		r_row=[]
+		g_row=[]
+		b_row=[]
+		for j in range(0, img.size[1]):
+			r,g,b=pixels[i,j]
+			r_row.append(r)
+			g_row.append(g)
+			b_row.append(b)
+		r_block.append(r_row)
+		g_block.append(g_row)
+		b_block.append(b_row)
+		
 
-print(data)
-predictable_random_order("bob", data)
-print(data)
-#predictable_random_order("bob", dct_g)
-#predictable_random_order("bob", dct_b)'''
+	r_dct_block = dct(r_block)
+	g_dct_block = dct(g_block)
+	b_dct_block = dct(b_block)
 
-binary_message_pos=0
-#print(len(binary_message))
-
-for dct_coeffs in dct_r:
-	# round the DCT coefficients to integers
-	dct_ints = np.round(dct_coeffs).astype(int)
-
-	# add a string represented by binary if it's a 1 in the string
-	#binary_message = '1010'
-	if len(dct_coeffs)+binary_message_pos >= len(binary_message):
-		temp=len(binary_message)
-	else:
-		temp=len(dct_coeffs)+binary_message_pos
-	tempstring=binary_message[binary_message_pos:temp]
-	print(len(tempstring), binary_message_pos)
+	ir_dct_block=idct(r_dct_block)
+	ig_dct_block=idct(g_dct_block)
+	ib_dct_block=idct(b_dct_block)
 	
-	for i, bit in enumerate(binary_message[binary_message_pos:temp]):
-		# zero out the LSB of each coefficient
-		print("Before", dct_ints[i])
-		dct_ints[i] = dct_ints[i] & ~1
 
-		#print(i,bit, dct_ints[i])
+	#print(r_dct_block)
+	
+	#print(len(r_dct_block))
+	
+	
+	for i in range(0, img.size[0]):
+		for j in range(0, img.size[1]):
+			pixels[i,j] = (int(ir_dct_block[i][j]), int(ig_dct_block[i][j]), int(ib_dct_block[i][j]))
+
+	img.save(outfile)
+
+def decode_image(encoded_image_filename, pro=False, password=""):
+	print("Start Decode")
+	binary_message = ''
+
+	# Load PNG image
+	img = Image.open(encoded_image_filename)
+
+	# Separate image into color channels
+	img_r, img_g, img_b = img.split()
+
+	# Convert color channels to NumPy arrays
+	arr_r = np.array(img_r)
+	arr_g = np.array(img_g)
+	arr_b = np.array(img_b)
+
+	# Apply 2D DCT to each color channel
+	dct_r = dct(dct(arr_r.T, norm='ortho').T, norm='ortho')
+	dct_g = dct(dct(arr_g.T, norm='ortho').T, norm='ortho')
+	dct_b = dct(dct(arr_b.T, norm='ortho').T, norm='ortho')
+
+	binary_message_pos=0
+	#print(len(binary_message))
+
+	for dct_coeffs in dct_r:
+		# round the DCT coefficients to integers
+		dct_ints = np.round(dct_coeffs).astype(int)
+
+		# add a string represented by binary if it's a 1 in the string
+		#binary_message = '1010'
+		#tempstring=binary_message[0:len(dct_coeffs)]
+		#print(len(tempstring), binary_message_pos)
 		
-		if bit == '1':
-			dct_ints[i]+=1
-		binary_message_pos+=1
-		print("After", dct_ints[i])
+		for i in range(0,40):
+			#print(i, dct_ints[i])
+			print(dct_ints[i])
 
-		
-	# convert the integers back to floating-point values
-	dct_coeffs = dct_ints.astype(float)
+			data=dct_ints[i]%2
+			binary_message+=str(data)
+			
+	#print(binary_message)
 
-	#print("bmp", binary_message_pos)
-
-
-# Apply 2D IDCT to each color channel to obtain image
-img_r_reconstructed = idct(idct(dct_r.T, norm='ortho').T, norm='ortho')
-img_g_reconstructed = idct(idct(dct_g.T, norm='ortho').T, norm='ortho')
-img_b_reconstructed = idct(idct(dct_b.T, norm='ortho').T, norm='ortho')
-
-# Merge color channels into image
-img_reconstructed = Image.merge("RGB", (
-    Image.fromarray(np.round(img_r_reconstructed).astype(np.uint8)),
-    Image.fromarray(np.round(img_g_reconstructed).astype(np.uint8)),
-    Image.fromarray(np.round(img_b_reconstructed).astype(np.uint8))
-))
-
-# Save reconstructed image to file
-img_reconstructed.save("example_reconstructed.jpg")
 
