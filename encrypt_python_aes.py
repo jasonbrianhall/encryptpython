@@ -143,7 +143,11 @@ def run_encrypted_script(file_name, password):
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    pt = cipher.decrypt(data[1+AES.block_size:])
+    try:
+        pt = cipher.decrypt(data[1+AES.block_size:])
+    except:
+        print("\nDecryption error ... probably wrong password")
+        return
 
     length=pt[0] + pt[1]*256 + pt[2]*256**2 + pt[3]*256**3
     exec(pt[4:length+4])
