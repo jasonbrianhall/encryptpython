@@ -18,6 +18,7 @@ import getpass
 import string
 import random
 import steghide
+import struct
 
 # Get Encrypted Data
 def get_encrypt_script(file_name, password):
@@ -40,11 +41,14 @@ def get_encrypt_script(file_name, password):
     iv=""
     for x in range(0,AES.block_size):
         iv = iv+chr(random.randint(0,255))
+
+    length_as_int = struct.pack('I', len(data))
+    data=length_as_int+data
+
     iv=iv.encode()[:16]
     # Pad the data to a multiple of the block size
     padding_length = AES.block_size - (len(data) % AES.block_size)
     offset=chr(padding_length).encode()
-
     data = data + (chr(padding_length) * padding_length).encode()
     
     # Create a new AES cipher object
@@ -77,9 +81,11 @@ def encrypt_script(file_name, password):
         iv = iv+chr(random.randint(0,255))
     iv=iv.encode()[:16]
     # Pad the data to a multiple of the block size
+    length_as_int = struct.pack('I', len(data))
+    data= length_as_int + data
+
     padding_length = AES.block_size - (len(data) % AES.block_size)
     offset=chr(padding_length).encode()
-
     data = data + (chr(padding_length) * padding_length).encode()
     
     # Create a new AES cipher object
@@ -108,7 +114,9 @@ def run_encrypted_data(data, password):
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
     pt = cipher.decrypt(data[1+AES.block_size:])
-    exec(pt)
+
+    length=pt[0] + pt[1]*256 + pt[2]*256**2 + pt[3]*256**3
+    exec(pt[4:length+4])
     #exec(decrypted_data[:offset])
 
 
@@ -132,7 +140,9 @@ def run_encrypted_script(file_name, password):
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
     pt = cipher.decrypt(data[1+AES.block_size:])
-    exec(pt)
+
+    length=pt[0] + pt[1]*256 + pt[2]*256**2 + pt[3]*256**3
+    exec(pt[4:length+4])
     #exec(decrypted_data[:offset])
 
 def create_encrypted_script(filename, password):
@@ -155,6 +165,9 @@ def create_encrypted_script(filename, password):
     iv=""
     for x in range(0,AES.block_size):
         iv = iv+chr(random.randint(0,255))
+
+    length_as_int = struct.pack('I', len(data))
+    data=length_as_int+data
 
     iv=iv.encode()[:16]
     # Pad the data to a multiple of the block size
@@ -202,7 +215,8 @@ def run_encrypted_script(password):
     cipher = AES.new(key, AES.MODE_CBC, iv)
     try:
         pt = cipher.decrypt(data[1+AES.block_size:])
-        exec(pt)
+        length=pt[0] + pt[1]*256 + pt[2]*256**2 + pt[3]*256**3
+        exec(pt[4:length+4])
     except ValueError:
         print("\t** Invalid password!!!")
         sys.exit(1)
