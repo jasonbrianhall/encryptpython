@@ -113,7 +113,11 @@ def run_encrypted_data(data, password):
     iv=data[1:AES.block_size+1]
     offset=-1*data[0]
     cipher = AES.new(key, AES.MODE_CBC, iv)
-    pt = cipher.decrypt(data[1+AES.block_size:])
+    try:
+        pt = cipher.decrypt(data[1+AES.block_size:])
+    except:
+        print("\nDecryption error ... probably wrong password")
+        return
 
     length=pt[0] + pt[1]*256 + pt[2]*256**2 + pt[3]*256**3
     exec(pt[4:length+4])
@@ -247,20 +251,29 @@ def main():
     selfencrypted=False
     pngfile=None
     usepro=True
+    inputset=False
+    pngset=False
+    
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             show_help()
             sys.exit()
         elif opt in ("-i", "--input"):
             filename = arg
+            inputset=True
         elif opt in ("-e", "--encrypt"):
             encrypt=True
         elif opt in ("-c", "--create"):
             selfencrypted=True
         elif opt in ("-p", "--png"):
             pngfile = arg
+            pngset=True
         elif opt in ("-P", "--pro"):
             usepro=False
+            
+    if inputset==True and pngset==True and encrypt==False:
+        print("Can not set -i and -p at the same time without setting -e")
+        sys.exit(1)
             
     if encrypt==True and not filename==None:
         if pngfile==None:
