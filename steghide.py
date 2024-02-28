@@ -9,6 +9,9 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 	has_alpha = im.mode.endswith('A')
 	if has_alpha:
 		alpha = im.getchannel('A')
+
+	# Alpha Layer Stuff is Broken
+
 	im = im.convert('RGB') 
 	# Checks if it has an alpha layer and adds it if it doesn't
 	if addalpha==True and not has_alpha:
@@ -198,6 +201,8 @@ def decode_image(encoded_image_filename, pro=False, password="", sigbits=1):
 
 	# Open the PNG image
 	im = Image.open(encoded_image_filename)
+	im = im.convert('RGB')
+
 	# Get the pixel data from the image
 	pixels = im.load()
 
