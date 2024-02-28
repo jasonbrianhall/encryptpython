@@ -324,13 +324,13 @@ def show_help():
     print("-p --png     Steganography PNG file where the script is hidden (when decrypting, don't include -i)")
     print("-P --pro     Disable Predictable Random Order (disabling it makes it less secure)")
     print("\nExample Usage: ")
-    print(sys.argv[0] + "-i filename.py                           Runs Encrypted Data")
-    print(sys.argv[0] + "-i filename.py -e                        Creates Encrypted Data (overwrites existing file)")
-    print(sys.argv[0] + "-i filename.py -c                        Creates Self Encrypted Python Script (overwrites existing file)")
-    print(sys.argv[0] + "-i filename.py -p imagefile.jpg -e       Creates PNG imagefile.png using steganography")
-    print(sys.argv[0] + "-p imagefile.jpg                         Executes Code in imagefile.png")
-    print(sys.argv[0] + "-i filename.py -p imagefile.jpg -e -P    Creates PNG imagefile.png using steganography but creates it insecurely")
-    print(sys.argv[0] + "-p imagefile.jpg -P                      Executes Code in insecure imagefile.png")
+    print(sys.argv[0] + " -i filename.py                           Runs Encrypted Data")
+    print(sys.argv[0] + " -i filename.py -e                        Creates Encrypted Data (overwrites existing file)")
+    print(sys.argv[0] + " -i filename.py -c                        Creates Self Encrypted Python Script (overwrites existing file)")
+    print(sys.argv[0] + " -i filename.py -p imagefile.jpg -e       Creates PNG imagefile.png using steganography")
+    print(sys.argv[0] + " -p imagefile.jpg                         Executes Code in imagefile.png")
+    print(sys.argv[0] + " -i filename.py -p imagefile.jpg -e -P    Creates PNG imagefile.png using steganography but creates it insecurely")
+    print(sys.argv[0] + " -p imagefile.jpg -P                      Executes Code in insecure imagefile.png")
      
 
 
