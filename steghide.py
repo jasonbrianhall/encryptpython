@@ -6,9 +6,11 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 
 	# Open the PNG image
 	im = Image.open(image_filename)
-
-	# Checks if it has an alpha layer and adds it if it doesn't
 	has_alpha = im.mode.endswith('A')
+	if has_alpha:
+		alpha = im.getchannel('A')
+	im = im.convert('RGB') 
+	# Checks if it has an alpha layer and adds it if it doesn't
 	if addalpha==True and not has_alpha:
 		# Create a new image with an alpha layer
 		im.putalpha(255)
@@ -184,7 +186,9 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 				outfile=temp[0]+".png"
 		else:
 			outfile=temp[0]+".png"
-			
+
+	if has_alpha:
+		im.putalpha(alpha)
 	im.save(outfile)
 	#print(outfile)
 	print("Message encoded successfully; saved as " + outfile)
