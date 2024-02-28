@@ -287,7 +287,7 @@ def main():
             password = getpass.getpass(prompt='Enter password to encrypt the PNG: ')
             data=get_encrypt_script(filename, password)
             if pngfile.endswith(".png"):
-                outfile=pngfile.split(".png")[0]+"_encrypted.png")
+                outfile=pngfile.split(".png")[0]+"_encrypted.png"
             else:
                 outfile=pngfile
             if usepro==False:
