@@ -286,10 +286,14 @@ def main():
         else:
             password = getpass.getpass(prompt='Enter password to encrypt the PNG: ')
             data=get_encrypt_script(filename, password)
-            if usepro==False:
-                steghide.encode_image(pngfile, pngfile, data)
+            if pngfile.endswith(".png"):
+                outfile=pngfile.split(".png")[0]+"_encrypted.png")
             else:
-                steghide.encode_image(pngfile, pngfile, data, pro=True, password=password)
+                outfile=pngfile
+            if usepro==False:
+                steghide.encode_image(pngfile, outfile, data)
+            else:
+                steghide.encode_image(pngfile, outfile, data, pro=True, password=password)
         sys.exit(0)
     elif not filename==None and selfencrypted==False:
         password = getpass.getpass(prompt='Enter password to decrypt/run encrypted script: ')
