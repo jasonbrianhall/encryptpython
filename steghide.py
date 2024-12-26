@@ -2,14 +2,16 @@ from PIL import Image
 from pro import predictable_random_order
 
 # Encodes data into Image file (supports non-lossy files such as PNG, BMP, and TIF; sigbits should always be 1 but can be changed for testing)
-def encode_image(image_filename, outfile, message, pro=False, password="", addalpha=False, sigbits=1):
+def encode_image(image_filename, outfile, message, pro=False, password="", addalpha=False, sigbits=1, use_alpha=False):
 
 	# Open the PNG image
 	im = Image.open(image_filename)
-	has_alpha = im.mode.endswith('A')
-	if has_alpha:
-		alpha = im.getchannel('A')
-
+	if use_alpha==True:
+		has_alpha = im.mode.endswith('A')
+		if has_alpha:
+			alpha = im.getchannel('A')
+	else:
+		has_alpha=False
 	# Alpha Layer Stuff is Broken
 
 	im = im.convert('RGB') 
