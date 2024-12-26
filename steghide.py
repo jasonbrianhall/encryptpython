@@ -199,7 +199,7 @@ def encode_image(image_filename, outfile, message, pro=False, password="", addal
 	print("Message encoded successfully; saved as " + outfile)
 
 # Decodes data in PNG using 32 bit length
-def decode_image(encoded_image_filename, pro=False, password="", sigbits=1):
+def decode_image(encoded_image_filename, pro=False, password="", sigbits=1, use_alpha=False):
 
 	# Open the PNG image
 	im = Image.open(encoded_image_filename)
@@ -209,8 +209,10 @@ def decode_image(encoded_image_filename, pro=False, password="", sigbits=1):
 	pixels = im.load()
 
 	# Checks if it has an alpha layer and adds it if it doesn't
-	has_alpha = im.mode.endswith('A')
-
+	if use_alpha==True:
+		has_alpha = im.mode.endswith('A')
+	else:
+		has_alpha=False
 	ander=1
 	for x in range(0,sigbits):
 		ander*=2
